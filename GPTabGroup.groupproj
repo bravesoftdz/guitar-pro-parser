@@ -1,0 +1,48 @@
+﻿	<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+		<PropertyGroup>
+			<ProjectGuid>{451AD76F-FEA8-420F-986D-AE5BC1659BD0}</ProjectGuid>
+		</PropertyGroup>
+		<ItemGroup>
+			<Projects Include="tests\GPTabTests.dproj">
+				<Dependencies/>
+			</Projects>
+			<Projects Include="dump\dumpgp.dproj">
+				<Dependencies/>
+			</Projects>
+		</ItemGroup>
+		<ProjectExtensions>
+			<Borland.Personality>Default.Personality.12</Borland.Personality>
+			<Borland.ProjectType/>
+			<BorlandProject>
+				<Default.Personality/>
+			</BorlandProject>
+		</ProjectExtensions>
+		<Target Name="GPTabTests">
+			<MSBuild Projects="tests\GPTabTests.dproj"/>
+		</Target>
+		<Target Name="GPTabTests:Clean">
+			<MSBuild Targets="Clean" Projects="tests\GPTabTests.dproj"/>
+		</Target>
+		<Target Name="GPTabTests:Make">
+			<MSBuild Targets="Make" Projects="tests\GPTabTests.dproj"/>
+		</Target>
+		<Target Name="dumpgp">
+			<MSBuild Projects="dump\dumpgp.dproj"/>
+		</Target>
+		<Target Name="dumpgp:Clean">
+			<MSBuild Targets="Clean" Projects="dump\dumpgp.dproj"/>
+		</Target>
+		<Target Name="dumpgp:Make">
+			<MSBuild Targets="Make" Projects="dump\dumpgp.dproj"/>
+		</Target>
+		<Target Name="Build">
+			<CallTarget Targets="GPTabTests;dumpgp"/>
+		</Target>
+		<Target Name="Clean">
+			<CallTarget Targets="GPTabTests:Clean;dumpgp:Clean"/>
+		</Target>
+		<Target Name="Make">
+			<CallTarget Targets="GPTabTests:Make;dumpgp:Make"/>
+		</Target>
+		<Import Project="$(BDS)\Bin\CodeGear.Group.Targets" Condition="Exists('$(BDS)\Bin\CodeGear.Group.Targets')"/>
+	</Project>
