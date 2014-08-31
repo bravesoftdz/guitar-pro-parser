@@ -4,6 +4,7 @@ program dumpgp;
 
 uses
   SysUtils,
+  Graphics,
   uGPFileParser in '..\units\uGPFileParser.pas';
 
 var
@@ -47,8 +48,17 @@ begin
       Writeln(Format('Number of Tracks    : %d', [GP.NumberOfTracks]));
 
       for i := 0  to GP.Measures.Count - 1 do begin
-        Writeln(Format('Measure Number      : %d', [i]));
+        Writeln(Format('Measure Number      : %d', [GP.Measures[i].MeasureNumber]));
         Writeln(Format('Measure Marker      : %s', [GP.Measures[i].MarkersName]));
+      end;
+
+      for i := 0  to GP.Tracks.Count - 1 do begin
+        Writeln(Format('Track Number        : %d', [GP.Tracks[i].TrackNumber]));
+        Writeln(Format('Track Name          : %s', [GP.Tracks[i].Name]));
+        Writeln(Format('Track String Count  : %d', [GP.Tracks[i].NumberOfStrings]));
+        Writeln(Format('Track Fret Count    : %d', [GP.Tracks[i].NumberOfFrets]));
+        Writeln(Format('Track Capo Fret     : %d', [GP.Tracks[i].HeightOfCapo]));
+        Writeln(Format('Track Colour        : %s', [ColorToString(GP.Tracks[i].Colour)]));
       end;
 
     finally
