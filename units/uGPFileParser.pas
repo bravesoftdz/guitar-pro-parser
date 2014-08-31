@@ -2,15 +2,10 @@ unit uGPFileParser;
 
 interface
 
-uses SysUtils, Classes;
+uses SysUtils, Classes, Graphics;
 
 
 type
-
-  // Version
-  // Tab Information
-  // Lyrics
-  // Other
 
   TTrackLyricsCount = 0..4;
 
@@ -23,17 +18,17 @@ type
 
   TGPTrackLyrics = class(TObject)
     private
-      FTrackNumber: integer;
+      FTrackNumber: Int32;
       FLines : array[TTrackLyricsCount] of string;
       FMeasureNumbers : array[TTrackLyricsCount] of integer;
-      procedure SetTrackNumber(const Value: integer);
+      procedure SetTrackNumber(const Value: Int32);
       function GetLine(aIndex: integer): string;
       procedure SetLine(aIndex: integer; const Value: string);
       function GetMeasureNumber(aIndex: integer): integer;
       procedure SetMeasureNumber(aIndex: integer; const Value: integer);
 
     public
-      property TrackNumber : integer read FTrackNumber write SetTrackNumber;
+      property TrackNumber : Int32 read FTrackNumber write SetTrackNumber;
       property Line[aIndex : integer] : string read GetLine write SetLine;
       property MeasureNumber[aIndex : integer] : integer read GetMeasureNumber write SetMeasureNumber;
   end;
@@ -42,57 +37,52 @@ type
 
   TGPChannel = class(TObject)
     private
-			FInstrument: integer;
-  		FVolume : byte;
-  		FBalance : byte;
-  		FChorus :	byte;
-  		FReverb : byte;
-  		FPhaser :  byte;
-  		FTremolo : byte;
+			FInstrument: int32;
+  		FVolume : Byte;
+  		FBalance : Byte;
+  		FChorus :	Byte;
+  		FReverb : Byte;
+  		FPhaser :  Byte;
+  		FTremolo : Byte;
       FBank : TChannelBank;
-      FBlank1 : byte;
-      FBlank2 : byte;
+      FBlank1 : Byte;
+      FBlank2 : Byte;
 
     public
     published
-      property Instrument : Integer read FInstrument;
+      property Instrument : Int32 read FInstrument;
       property Volume : Byte read FVolume;
       property Balance : Byte read FBalance;
       property Chorus : Byte read FChorus;
       property Reverb : Byte read FReverb;
       property Phaser : Byte read FPhaser;
-      property Tremolo  : byte read FTremolo;
+      property Tremolo  : Byte read FTremolo;
       property Bank  : TChannelBank read FBank;
 
   end;
 
   TGPMeasure = class(TCollectionItem)
-  private
-    FIsDoubleBar : boolean;
-    FIsBeginningOfRepeat : boolean;
-    FKeySignatureNumerator : Byte;
-    FKeySignatureDenominator : Byte;
-    FNumberOfRepeats : Byte;
-    FNumberOfAlternativeEndings : Byte;
-    FMarkersName : string;
-    FRed : Byte;
-    FGreen : Byte;
-    FBlue  : Byte;
-    FWhite : Byte;
-    FTonality : Byte;
+    private
+      FMeasureNumber : Integer;
+      FIsDoubleBar : boolean;
+      FIsBeginningOfRepeat : boolean;
+      FKeySignatureNumerator : Byte;
+      FKeySignatureDenominator : Byte;
+      FNumberOfRepeats : Byte;
+      FNumberOfAlternativeEndings : Byte;
+      FMarkersName : string;
+      FColour : TColor;
+      FTonality : Byte;
     public
       //procedure Assign(ASource: TPersistent); override;
-    published
+      property MeasureNumber : integer read FMeasureNumber;
       property IsDoubleBar : Boolean read FIsDoubleBar;
       property IsBeginningOfRepeat : boolean read FIsBeginningOfRepeat;
       property KeySignatureNumerator : Byte read FKeySignatureNumerator;
       property KeySignatureDenominator : Byte read FKeySignatureDenominator;
       property NumberOfRepeats : Byte read FNumberOfRepeats;
       property NumberOfAlternativeEndings : Byte read FNumberOfAlternativeEndings;
-      property Red : byte read FRed;
-      property Green : byte read FGreen;
-      property Blue : byte read FBlue;
-      property White : byte read FWhite;
+      property Colour : TColor read FColour;
       property MarkersName : string read FMarkersName;
       property Tonality : byte read FTonality;
 
@@ -107,6 +97,71 @@ type
     function  Add: TGPMeasure; reintroduce;
     function  Insert(Index: Integer): TGPMeasure; reintroduce;
     property  Items[Index: Integer]: TGPMeasure read GetItem write SetItem; default;
+  end;
+
+  TGPTuning = class(TCollectionItem)
+  private
+    FTuningNumber : Int32;
+    FValue : Int32;
+    procedure SetTuningNumber(const Number : Int32);
+    procedure SetTuningValue(const Value : Int32);
+
+    public
+      //procedure Assign(ASource: TPersistent); override;
+      property TuningNumber : Int32 read FTuningNumber write SetTuningNumber;
+      property Value : Int32 read FValue write SetTuningValue;
+  end;
+
+  TGPTuningArray = class(TOwnedCollection)
+  private
+    function  GetItem(Index: Integer): TGPTuning;
+    procedure SetItem(Index: Integer; const Value: TGPTuning);
+  public
+    constructor Create(AOwner: TPersistent);
+    function  Add: TGPTuning; reintroduce;
+    function  Insert(Index: Integer): TGPTuning; reintroduce;
+    property  Items[Index: Integer]: TGPTuning read GetItem write SetItem; default;
+  end;
+
+  TGPTrack = class(TCollectionItem)
+  private
+    FTrackNumber : Integer;
+    FHeader : Byte;
+    FName : string;
+    FNumberOfStrings : Integer;
+    FPort : Integer;
+    FChannel : Integer;
+    FChannelE : Integer;
+    FNumberOfFrets : Integer;
+    FHeightOfCapo : Integer;
+    FColour : TColor;
+    FTuningArray : TGPTuningArray;
+    public
+      //procedure Assign(ASource: TPersistent); override;
+      constructor Create(Collection: TCollection); override;
+      destructor Destroy; override;
+      property TrackNumber : integer read FTrackNumber;
+      property Header : Byte read FHeader;
+      property Name : string read FName;
+      property NumberOfStrings : integer read FNumberOfStrings;
+      property Port : Integer read FPort;
+      property Channel : Integer read FChannel;
+      property ChannelE : Integer read FChannelE;
+      property NumberOfFrets : Integer read FNumberOfFrets;
+      property HeightOfCapo : Integer read FHeightOfCapo;
+      property Colour : TColor read FColour;
+      property Tunings : TGPTuningArray read FTuningArray;
+  end;
+
+  TGPTrackArray = class(TOwnedCollection)
+  private
+    function  GetItem(Index: Integer): TGPTrack;
+    procedure SetItem(Index: Integer; const Value: TGPTrack);
+  public
+    constructor Create(AOwner: TPersistent);
+    function  Add: TGPTrack; reintroduce;
+    function  Insert(Index: Integer): TGPTrack; reintroduce;
+    property  Items[Index: Integer]: TGPTrack read GetItem write SetItem; default;
   end;
 
   TGPKey = class(TObject)
@@ -181,13 +236,17 @@ type
     FNumberOfMeasures : integer;
     FNumberOfTracks : integer;
     FMeasureArray: TGPMeasureArray;
+    FTrackArray: TGPTrackArray;
 
     function ReadStringByte(const ExpectedLength : integer) : AnsiString;
-    function ReadStringInteger : AnsiString;
-    function ReadStringIntegerPlusOne : AnsiString;
+    function ReadStringInt32 : AnsiString;
+    function ReadStringInt32PlusOne : AnsiString;
+    function ReadStringBytePlusOne : AnsiString; overload;
+    function ReadStringBytePlusOne(const ExpectedLength : integer) : AnsiString; overload;
     function ReadBoolean : Boolean;
     function ReadInt32 : Int32;
     function ReadByte : byte;
+    function ReadRGB(const SkipWhite : Boolean) : TColor;
     procedure Skip(const count : integer);
 
     function GetChannel(Index: Integer): TGPChannel;
@@ -246,6 +305,7 @@ type
     property NumberOfTracks : integer read FNumberOfTracks;
 
     property Measures: TGPMeasureArray read FMeasureArray;
+    property Tracks: TGPTrackArray read FTrackArray;
 
   end;
 
@@ -273,11 +333,10 @@ type
 
 implementation
 
-uses StrUtils;
+uses StrUtils, Windows;
 
 type
   TBitFlag = (FLAG_0 = $01, FLAG_1 = $02, FLAG_2 = $04, FLAG_3 = $08, FLAG_4 = $10, FLAG_5 = $20, FLAG_6 = $40, FLAG_7 = $80);
-  //TBitFlags = set of TBitFlag;
 
 function IsBitSet(const flag: TBitFlag; const bits: Byte): Boolean;
 begin
@@ -382,6 +441,87 @@ begin
   Result := TGPMeasure(inherited Insert(Index));
 end;
 
+{ TGPTuning }
+
+procedure TGPTuning.SetTuningNumber(const Number : Int32);
+begin
+  FTuningNumber := Value;
+end;
+
+procedure TGPTuning.SetTuningValue(const Value : Int32);
+begin
+  FValue := Value;
+end;
+
+{ TGPTuningArray }
+
+constructor TGPTuningArray.Create(AOwner: TPersistent);
+begin
+  inherited Create(AOwner, TGPTuning);
+end;
+
+function TGPTuningArray.GetItem(Index: Integer): TGPTuning;
+begin
+  Result := TGPTuning(inherited GetItem(Index));
+end;
+
+procedure TGPTuningArray.SetItem(Index: Integer; const Value: TGPTuning);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TGPTuningArray.Add: TGPTuning;
+begin
+  Result := TGPTuning(inherited Add);
+end;
+
+function TGPTuningArray.Insert(Index: Integer): TGPTuning;
+begin
+  Result := TGPTuning(inherited Insert(Index));
+end;
+
+
+{ TGPTrack }
+
+constructor TGPTrack.Create(Collection: TCollection);
+begin
+  inherited Create(Collection);
+  FTuningArray := TGPTuningArray.Create(Self);
+end;
+
+destructor TGPTrack.Destroy;
+begin
+  FTuningArray.Free;
+  inherited;
+end;
+
+{ TGPTrackArray }
+
+constructor TGPTrackArray.Create(AOwner: TPersistent);
+begin
+  inherited Create(AOwner, TGPTrack);
+end;
+
+function TGPTrackArray.GetItem(Index: Integer): TGPTrack;
+begin
+  Result := TGPTrack(inherited GetItem(Index));
+end;
+
+procedure TGPTrackArray.SetItem(Index: Integer; const Value: TGPTrack);
+begin
+  inherited SetItem(Index, Value);
+end;
+
+function TGPTrackArray.Add: TGPTrack;
+begin
+  Result := TGPTrack(inherited Add);
+end;
+
+function TGPTrackArray.Insert(Index: Integer): TGPTrack;
+begin
+  Result := TGPTrack(inherited Insert(Index));
+end;
+
 { TGPFileParser }
 
 constructor TGPFileParser.Create(const Filename: string);
@@ -389,12 +529,14 @@ begin
   FNotes := TStringList.Create;
   FTrackLyrics := TGPTrackLyrics.Create;
   FMeasureArray := TGPMeasureArray.Create(Self);
+  FTrackArray := TGPTrackArray.Create(Self);
   FKey := TGPKey.Create;
   FFilename := Filename
 end;
 
 destructor TGPFileParser.Destroy;
 begin
+  FTrackArray.Free;
   FMeasureArray.Free;
   FNotes.Free;
   FTrackLyrics.Free;
@@ -411,6 +553,18 @@ begin
   finally
     FFile.Free;
   end;
+end;
+
+function TGPFileParser.ReadRGB(const SkipWhite : Boolean) : TColor;
+var
+  Red, Green, Blue : byte;
+begin
+  FFile.ReadBuffer(Red, 1);
+  FFile.ReadBuffer(Green, 1);
+  FFile.ReadBuffer(Blue, 1);
+  if SkipWhite then
+    Skip(1);
+  Result := RGB(Red, Green, Blue);
 end;
 
 function TGPFileParser.ReadBoolean: Boolean;
@@ -447,7 +601,7 @@ begin
   Skip(ExpectedLength - RealLength);
 end;
 
-function TGPFileParser.ReadStringInteger: AnsiString;
+function TGPFileParser.ReadStringInt32: AnsiString;
 var
   ReadLength : Int32;
 begin
@@ -456,7 +610,7 @@ begin
   FFile.ReadBuffer(Pointer(Result)^, Length(Result));
 end;
 
-function TGPFileParser.ReadStringIntegerPlusOne: AnsiString;
+function TGPFileParser.ReadStringInt32PlusOne: AnsiString;
 var
   LengthPlusOne : Int32;
   RealLength : Int32;
@@ -480,69 +634,91 @@ begin
   end;
 end;
 
-procedure TGPFileParser.Skip(const count : integer);
+function TGPFileParser.ReadStringBytePlusOne : AnsiString;
+var
+  LengthPlusOne : Byte;
+  RealLength : Byte;
+  ByteLength : byte;
+begin
+  FFile.ReadBuffer(LengthPlusOne, 1); // reads the expected length + 1
+  RealLength := LengthPlusOne - 1; // computes the real length
+  SetLength(Result, RealLength);
+  FFile.ReadBuffer(Pointer(Result)^, Length(Result));
+end;
+
+function TGPFileParser.ReadStringBytePlusOne(const ExpectedLength : integer) : AnsiString;
+var
+  LengthPlusOne : Byte;
+  RealLength : Byte;
+  ByteLength : byte;
+begin
+  FFile.ReadBuffer(LengthPlusOne, 1); // reads the expected length + 1
+  RealLength := LengthPlusOne - 1; // computes the real length
+  SetLength(Result, RealLength);
+  FFile.ReadBuffer(Pointer(Result)^, Length(Result));
+  Skip(ExpectedLength - RealLength);
+end;
+
+procedure TGPFileParser.Skip(const count : Int32);
 begin
   FFile.Seek(count, TSeekOrigin.soCurrent);
 end;
 
-function TGPFileParser.GetChannel(Index: Integer): TGPChannel;
+function TGPFileParser.GetChannel(Index: Int32): TGPChannel;
 begin
   result := FChannels[Index];
 end;
 
 procedure TGPFileParser.GetAlbum;
 begin
-  FAlbum := ReadStringIntegerPlusOne;
+  FAlbum := ReadStringInt32PlusOne;
 end;
 
 procedure TGPFileParser.GetArtist;
 begin
-  FArtist := ReadStringIntegerPlusOne;
+  FArtist := ReadStringInt32PlusOne;
 end;
 
 procedure TGPFileParser.GetCopyright;
 begin
-  FCopyright := ReadStringIntegerPlusOne;
+  FCopyright := ReadStringInt32PlusOne;
 end;
 
 procedure TGPFileParser.GetInstructions;
 begin
-  FInstructional := ReadStringIntegerPlusOne;
+  FInstructional := ReadStringInt32PlusOne;
 end;
 
 procedure TGPFileParser.GetInterpret;
 begin
-  FInterpret := ReadStringIntegerPlusOne;
+  FInterpret := ReadStringInt32PlusOne;
 end;
 
 procedure TGPFileParser.GetKey;
-var
-  Value : byte;
 begin
-  FFile.ReadBuffer(Value, 1);
-  FKey.SetValue(Value);
+  FKey.SetValue(ReadByte);
 end;
 
 procedure TGPFileParser.GetLyrics;
 var
-  i : integer;
+  i : Int32;
 begin
   FTrackLyrics.SetTrackNumber(ReadInt32);
   for i := Low(TTrackLyricsCount) to High(TTrackLyricsCount) do begin
     FTrackLyrics.SetMeasureNumber(i, ReadInt32);
-    FTrackLyrics.SetLine(i, ReadStringInteger);
+    FTrackLyrics.SetLine(i, ReadStringInt32);
   end;
 end;
 
 procedure TGPFileParser.GetNotes;
 var
   NumberOfNotes : Int32;
-  i : integer;
+  i : Int32;
 begin
   FNotes.Clear;
   FFile.Read(NumberOfNotes, 4);
   for i := 0 to NumberOfNotes - 1 do begin
-    FNotes.Add(ReadStringIntegerPlusOne)
+    FNotes.Add(ReadStringInt32PlusOne)
   end;
 end;
 
@@ -553,7 +729,7 @@ end;
 
 procedure TGPFileParser.GetSubTitle;
 begin
-  FSubTitle := ReadStringIntegerPlusOne;
+  FSubTitle := ReadStringInt32PlusOne;
 end;
 
 procedure TGPFileParser.GetTablature;
@@ -568,12 +744,12 @@ end;
 
 procedure TGPFileParser.GetTitle;
 begin
-  FTitle := ReadStringIntegerPlusOne;
+  FTitle := ReadStringInt32PlusOne;
 end;
 
 procedure TGPFileParser.GetTranscriber;
 begin
-  FTranscriber := ReadStringIntegerPlusOne;
+  FTranscriber := ReadStringInt32PlusOne;
 end;
 
 procedure TGPFileParser.GetTripletFeel;
@@ -588,7 +764,7 @@ end;
 
 procedure TGPFileParser.GetChannels;
 var
- i : integer;
+ i : Int32;
  Channel : TGPChannel;
 begin
   for i := 0 to 63 do begin
@@ -622,13 +798,14 @@ end;
 
 procedure TGPFileParser.GetMeasures;
 var
-  i : integer;
+  i : Int32;
   header : Byte;
   Measure : TGPMeasure;
 begin
-  for i  := 0 to FNumberOfMeasures - 1 do begin
+  for i := 0 to FNumberOfMeasures - 1 do begin
     header := ReadByte;
     Measure := FMeasureArray.Add;
+    Measure.FMeasureNumber := i + 1;
 
     // Bit 0 - Numerator
     if (IsBitSet(TBitFlag.FLAG_0, header)) then begin
@@ -655,16 +832,14 @@ begin
 
     // Bit 5 - Presence of a marker
     if (IsBitSet(TBitFlag.FLAG_5, header)) then begin
-      Measure.FMarkersName := ReadStringIntegerPlusOne;
-      Measure.FRed := ReadByte;
-      Measure.FGreen := ReadByte;
-      Measure.FBlue := ReadByte;
-      Measure.FWhite := ReadByte; // should always be 0x0;
+      Measure.FMarkersName := ReadStringInt32PlusOne;
+      Measure.FColour := ReadRGB(True);
     end;
 
     // Bit 6 - Tonality of the measure
     if (IsBitSet(TBitFlag.FLAG_6, header)) then begin
       Measure.FTonality := ReadByte;
+      Skip(1);
     end;
 
     // Bit 7
@@ -675,9 +850,36 @@ end;
 
 procedure TGPFileParser.GetTracks;
 var
-  i : integer;
+  i, j : Int32;
+  header : Byte;
+  Track : TGPTrack;
+  TuningValue : Int32;
+  Position : integer;
+  Tuning : TGPTuning;
 begin
   for i := 0 to FNumberOfTracks - 1 do begin
+    Position := FFile.Position;
+    Track := Tracks.Add;
+    Track.FTrackNumber := i + 1;
+    Track.FHeader := ReadByte;
+    Position := FFile.Position;
+    Track.FName := ReadStringByte(40);
+    Track.FNumberOfStrings := ReadInt32;
+    for j := 0 to 6 do begin
+      TuningValue := ReadInt32;
+      if Track.FNumberOfStrings > j then begin
+        Tuning := Track.FTuningArray.Add;
+        Tuning.TuningNumber := (j + 1);
+        Tuning.Value := TuningValue;
+      end;
+
+    end;
+    Track.FPort := ReadInt32;
+    Track.FChannel := ReadInt32;
+    Track.FChannelE := ReadInt32;
+    Track.FNumberOfFrets := ReadInt32;
+    Track.FHeightOfCapo := ReadInt32;
+    Track.FColour := ReadRGB(True);
   end;
 end;
 
@@ -744,27 +946,50 @@ end;
 { TGP4FileParser }
 
 procedure TGP4FileParser.Parse;
+var
+  Position : Int64;
 begin
+  Position := FFile.Position;
   GetVersion;
+  Position := FFile.Position;
   GetTitle;
+  Position := FFile.Position;
   GetSubTitle;
+  Position := FFile.Position;
   GetInterpret;
+  Position := FFile.Position;
   GetAlbum;
+  Position := FFile.Position;
   GetArtist;
+  Position := FFile.Position;
   GetCopyright;
+  Position := FFile.Position;
   GetTranscriber;
+  Position := FFile.Position;
   GetInstructions;
+  Position := FFile.Position;
   GetNotes;
+  Position := FFile.Position;
   GetTripletFeel;
+  Position := FFile.Position;
   GetLyrics;
+  Position := FFile.Position;
   GetTempo;
+  Position := FFile.Position;
   GetKey;
+  Position := FFile.Position;
   GetOctave;
+  Position := FFile.Position;
   GetChannels;
+  Position := FFile.Position;
   GetNumberOfMeasures;
+  Position := FFile.Position;
   GetNumberOfTracks;
+  Position := FFile.Position;
   GetMeasures;
+  Position := FFile.Position;
   GetTracks;
+  Position := FFile.Position;
 end;
 
 { TGPKey }
@@ -999,12 +1224,12 @@ begin
 Result := TGPKey.Create(1, 5);
 end;
 
-procedure TGPKey.SetValue(const KeyType: integer);
+procedure TGPKey.SetValue(const KeyType: Int32);
 begin
   SetValue(0, KeyType);
 end;
 
-procedure TGPKey.SetValue(const KeyMode, KeyType: integer);
+procedure TGPKey.SetValue(const KeyMode, KeyType: Int32);
 begin
   FKeyMode := KeyMode;
   FKeyType := KeyType;
@@ -1026,7 +1251,7 @@ begin
 Result := TGPKey.Create(1, 7);
 end;
 
-constructor TGPKey.Create(const KeyMode, KeyType: integer);
+constructor TGPKey.Create(const KeyMode, KeyType: Int32);
 begin
   FKeyMode := KeyMode;
   FKeyType := KeyType;
